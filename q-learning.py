@@ -15,7 +15,7 @@ DISCOUNT = 0.95
 EPISODES = 4000
 SHOW_EVERY = 500
 STATS_EVERY = 100
-PLAY = False
+PLAY = True
 # ~ PLAY = False
 
 # Exploration settings
@@ -42,7 +42,7 @@ if not PLAY:
     # use the best q-table, if available...
     try:
         q_table = np.load(
-            "./qtables/qtable_0_e2000.npy")
+            "./qtables/qtable_0_e3900.npy")
         print('using best ones..')
     except:
         q_table = np.random.uniform(
@@ -55,7 +55,9 @@ if not PLAY:
         s = env.reset()
         done = False
         discrete_state = get_discrete_state(s)
+        print(done)
         while not done:
+            print("hiiiii epsoid: ", episode)
             if np.random.random() > epsilon:
                 # Get action from Q table
                 action = np.argmax(q_table[discrete_state])
@@ -122,7 +124,7 @@ if not PLAY:
 # After Training, time to play...
 try:
     q_table_a = np.load(
-        "./qtables/qtable_0_e2800.npy")
+        "./qtables/qtable_0_e3900.npy")
 
     print('file found')
     found = True

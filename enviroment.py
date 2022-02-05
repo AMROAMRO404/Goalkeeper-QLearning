@@ -55,7 +55,7 @@ class Paddle(pygame.sprite.Sprite):
         self.reward = 0
         self.hits = 0
         self.done = False
-
+        self.for_done = 0
         # Set the background color and set it to be transparent
         self.image = pygame.Surface([self.w, self.h])
         self.image.fill(0)					# 0 is Black
@@ -77,6 +77,7 @@ class Paddle(pygame.sprite.Sprite):
         self.hits = 0
         self.done = False
         self.goals = 0
+        self.score = 0
         self.rect.center = (x, y)
 
     def move(self, y):
@@ -118,7 +119,7 @@ class Pong():
     def reset(self):
         xmargin = 20
         self.paddleA.reset(xmargin, self.h//2)
-        self.ball.reset(self.w//2, self.h)
+        self.ball.reset(self.w//2, self.h//2)
 
         # Return the initial positions
         a_observation = np.array(
@@ -159,6 +160,7 @@ class Pong():
         # Check if the ball is bouncing against any of the 4 walls:
         if self.ball.rect.x > self.w-self.ball.r*2:
             self.ball.velocity[0] = -self.ball.velocity[0]
+            self.paddleA.score += 1
         if self.ball.rect.x < 0:
             self.paddleA.goals += 1
             self.paddleA.reward -= 1
@@ -173,8 +175,8 @@ class Pong():
             self.paddleA.collided(self.ball)
 
         # If limit reached then done...
-        lim = 20
-        if self.paddleA.hits > lim:
+        lim = 10
+        if self.paddleA.score > lim:
             self.paddleA.done = True
 
         # return observations... 1 for each paddle and ball(only y-axis)
