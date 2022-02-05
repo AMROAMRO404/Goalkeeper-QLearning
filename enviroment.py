@@ -129,7 +129,7 @@ class Pong():
 
     def render(self):
         # Display routine
-        self.screen.fill(self.colors['GREY'])
+        self.screen.fill(self.colors['BLACK'])
         pygame.draw.line(self.screen, self.colors['WHITE'], [
             self.w//2, 0], [self.w//2, self.w], 5)
         self.all_sprites.draw(self.screen)
