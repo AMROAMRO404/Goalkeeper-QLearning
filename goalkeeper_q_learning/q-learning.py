@@ -1,4 +1,5 @@
 
+from turtle import shape
 import numpy as np
 import pygame
 import sys
@@ -11,7 +12,7 @@ env = Pong()
 
 LEARNING_RATE, DISCOUNT, EPISODES, SHOW_EVERY, STATS_EVERY, PLAY = q_learning_constants()
 
-# ~ PLAY = False
+PLAY = False
 
 # Exploration settings
 epsilon = 1  	# not a constant, going to be decayed
@@ -36,7 +37,8 @@ if not PLAY:
     # use the best q-table, if available...
     try:
         q_table = np.load(
-            "./qtables/qtable_0_e3900.npy")
+            "goalkeeper_q_learning/qtables/qtable_0_e3900.npy")
+        print(np.shape(q_table))
         print('using best ones..')
     except:
         q_table = np.random.uniform(
@@ -87,7 +89,7 @@ if not PLAY:
         # Save the Q-table
         if not episode % STATS_EVERY:
             np.save(
-                "./qtables/qtable_0_e{}".format(episode), q_table)
+                "goalkeeper_q_learning/qtables/qtable_0_e{}.npy".format(episode), q_table)
 
         # Decaying is being done every episode if episode number is within decaying range
         if (END_EPSILON_DECAYING >= episode >= START_EPSILON_DECAYING):
@@ -108,7 +110,7 @@ if not PLAY:
 # After Training, time to play...
 try:
     q_table_a = np.load(
-        "./qtables/qtable_0_e3900.npy")
+        "goalkeeper_q_learning/qtables/qtable_0_e3900.npy")
 
     print('file found')
     found = True

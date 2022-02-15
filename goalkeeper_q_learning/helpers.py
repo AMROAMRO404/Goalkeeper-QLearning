@@ -9,7 +9,7 @@ def plot_args(aggr_ep_rewards):
     plt.plot(aggr_ep_rewards['ep'],
              aggr_ep_rewards['min'], label="min rewards")
     #~ plt.show()
-    plt.savefig("./qtables/paddle_0.png")
+    plt.savefig("goalkeeper_q_learning/qtables/paddle_0.png")
     plt.clf()
 
 
