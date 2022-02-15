@@ -4,18 +4,13 @@ import pygame
 import sys
 from pygame.locals import *
 from enviroment import Pong, Paddle, Ball
-from matplotlib import pyplot as plt
-
+from helpers import plot_args, q_learning_constants
 
 # create the environment...
 env = Pong()
 
-LEARNING_RATE = 0.1
-DISCOUNT = 0.95
-EPISODES = 4000
-SHOW_EVERY = 500
-STATS_EVERY = 100
-PLAY = True
+LEARNING_RATE, DISCOUNT, EPISODES, SHOW_EVERY, STATS_EVERY, PLAY = q_learning_constants()
+
 # ~ PLAY = False
 
 # Exploration settings
@@ -27,7 +22,6 @@ epsilon_decay_value = epsilon/(END_EPSILON_DECAYING - START_EPSILON_DECAYING)
 # There are 2 observation space, so table will be 2D
 TABLE_SIZE = [30, 30]       			# this should not hard coded but yet...
 action_space = env.action_space			# 3 actions... -1,0,1
-num_agents = 1
 
 
 def get_discrete_state(state):
@@ -53,11 +47,9 @@ if not PLAY:
     for episode in range(EPISODES):
         episode_reward = 0
         s = env.reset()
-        done = False
+        is_terminal_state = False
         discrete_state = get_discrete_state(s)
-        print(done)
-        while not done:
-            print("hiiiii epsoid: ", episode)
+        while not is_terminal_state:
             if np.random.random() > epsilon:
                 # Get action from Q table
                 action = np.argmax(q_table[discrete_state])
@@ -65,14 +57,14 @@ if not PLAY:
                 # Get random action
                 action = np.random.randint(0, action_space)
 
-            new_state, reward, done = env.step(action)
+            new_state, reward, is_terminal_state = env.step(action)
             episode_reward += reward
             new_discrete_state = get_discrete_state(new_state)
 
             if (episode % SHOW_EVERY == 0):
                 env.render()
             # If simulation did not end yet after last step - update Q table
-            if not done:
+            if not is_terminal_state:
                 # Maximum possible Q value in next step (for new state)
                 max_future_q = np.max(q_table[new_discrete_state])
 
@@ -110,15 +102,7 @@ if not PLAY:
             aggr_ep_rewards['max'].append(max(ep_rewards[-STATS_EVERY:]))
             aggr_ep_rewards['min'].append(min(ep_rewards[-STATS_EVERY:]))
             #~ print(f'Episode: {episode:>5d}, average reward: {average_reward:>4.1f}, current epsilon: {epsilon:>1.2f}')
-    plt.plot(aggr_ep_rewards['ep'],
-             aggr_ep_rewards['avg'], label="average rewards")
-    plt.plot(aggr_ep_rewards['ep'],
-             aggr_ep_rewards['max'], label="max rewards")
-    plt.plot(aggr_ep_rewards['ep'],
-             aggr_ep_rewards['min'], label="min rewards")
-    #~ plt.show()
-    plt.savefig("./qtables/paddle_0.png")
-    plt.clf()
+    plot_args(aggr_ep_rewards)
 
 
 # After Training, time to play...

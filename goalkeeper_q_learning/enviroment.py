@@ -54,8 +54,8 @@ class Paddle(pygame.sprite.Sprite):
         self.goals = 0
         self.reward = 0
         self.hits = 0
-        self.done = False
-        self.for_done = 0
+        self.is_terminal_state = False
+        self.for_is_terminal_state = 0
         # Set the background color and set it to be transparent
         self.image = pygame.Surface([self.w, self.h])
         self.image.fill(0)					# 0 is Black
@@ -66,7 +66,7 @@ class Paddle(pygame.sprite.Sprite):
         self.rect.center = (x, y)
 
     def collided(self, other):
-        self.done = True
+        self.is_terminal_state = True
         self.reward += 10
         self.hits += 1
         other.bounce()
@@ -75,7 +75,7 @@ class Paddle(pygame.sprite.Sprite):
         # self.score = 0
         self.reward = 0
         self.hits = 0
-        self.done = False
+        self.is_terminal_state = False
         self.goals = 0
         self.score = 0
         self.rect.center = (x, y)
@@ -174,10 +174,10 @@ class Pong():
         if pygame.sprite.collide_rect(self.ball, self.paddleA) and self.ball.velocity[0] < 0:
             self.paddleA.collided(self.ball)
 
-        # If limit reached then done...
+        # If limit reached then is_terminal_state...
         lim = 10
         if self.paddleA.score > lim:
-            self.paddleA.done = True
+            self.paddleA.is_terminal_state = True
 
         # return observations... 1 for each paddle and ball(only y-axis)
         a_observation = np.array(
@@ -189,8 +189,8 @@ class Pong():
 
         state = a_observation
         reward = self.paddleA.reward
-        done = self.paddleA.done
-        return (state, reward, done)
+        is_terminal_state = self.paddleA.is_terminal_state
+        return (state, reward, is_terminal_state)
 
     def get_screen(self):
         # 2D (w,h) 32 bit color RGB 16777216
