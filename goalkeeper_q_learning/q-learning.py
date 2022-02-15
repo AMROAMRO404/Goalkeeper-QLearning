@@ -12,7 +12,7 @@ env = Pong()
 
 LEARNING_RATE, DISCOUNT, EPISODES, SHOW_EVERY, STATS_EVERY, PLAY = q_learning_constants()
 
-PLAY = False
+PLAY = True
 
 # Exploration settings
 epsilon = 1  	# not a constant, going to be decayed
@@ -38,7 +38,7 @@ if not PLAY:
     try:
         q_table = np.load(
             "goalkeeper_q_learning/qtables/qtable_0_e3900.npy")
-        print(np.shape(q_table))
+        # print(np.shape(q_table))
         print('using best ones..')
     except:
         q_table = np.random.uniform(

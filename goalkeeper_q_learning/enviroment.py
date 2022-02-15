@@ -6,6 +6,8 @@ from pygame.locals import *
 
 WIDTH = 700
 HEIGHT = 500
+
+
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREY = (150, 150, 150)
@@ -77,7 +79,6 @@ class Paddle(pygame.sprite.Sprite):
         self.hits = 0
         self.is_terminal_state = False
         self.goals = 0
-        self.score = 0
         self.rect.center = (x, y)
 
     def move(self, y):
@@ -91,11 +92,6 @@ class Paddle(pygame.sprite.Sprite):
 class Pong():
     FPS = 30  # Frame per second
     action_space = 3			# 3 actions... up,down,none
-    colors = {
-        'BLACK': BLACK,
-        'WHITE': WHITE,
-        'GREY': GREY
-    }
 
     def __init__(self, w=WIDTH, h=HEIGHT):
         self.w = w
@@ -108,8 +104,8 @@ class Pong():
         xmargin = 20  # Margin from corner 20px
 
         # Position of the paddle and ball
-        self.paddleA = Paddle(self.colors['WHITE'], xmargin, h//2)
-        self.ball = Ball(self.colors['WHITE'], w//2, h//2)
+        self.paddleA = Paddle(WHITE, xmargin, h//2)
+        self.ball = Ball(WHITE, w//2, h//2)
 
         # list of all the sprites in the game.
         self.all_sprites = pygame.sprite.Group()
@@ -123,24 +119,26 @@ class Pong():
 
         # Return the initial positions
         a_observation = np.array(
-            (self.paddleA.rect.centery, self.ball.rect.centery))
+            (
+                self.paddleA.rect.centery, self.ball.rect.centery
+            )
+        )
 
         return a_observation
 
     def render(self):
         # Display routine
-        self.screen.fill(self.colors['BLACK'])
-        pygame.draw.line(self.screen, self.colors['WHITE'], [
+        self.screen.fill(BLACK)
+        pygame.draw.line(self.screen, WHITE, [
             self.w//2, 0], [self.w//2, self.w], 5)
         self.all_sprites.draw(self.screen)
 
         # Display scores:
         font = pygame.font.Font(None, 74)
-        text = font.render(str(f'Goals: {self.paddleA.goals}'),
-                           1, self.colors['WHITE'])
+        text = font.render(str(f'Goals: {self.paddleA.goals}'),   1, WHITE)
         self.screen.blit(text, (100, 10))
         text = font.render(
-            str(f'Hits: {self.paddleA.hits}'), 1, self.colors['WHITE'])
+            str(f'Hits: {self.paddleA.hits}'), 1, WHITE)
         self.screen.blit(text, (410, 10))
         pygame.display.flip()
         self.clock.tick(self.FPS)
@@ -160,7 +158,6 @@ class Pong():
         # Check if the ball is bouncing against any of the 4 walls:
         if self.ball.rect.x > self.w-self.ball.r*2:
             self.ball.velocity[0] = -self.ball.velocity[0]
-            self.paddleA.score += 1
         if self.ball.rect.x < 0:
             self.paddleA.goals += 1
             self.paddleA.reward -= 1
@@ -174,11 +171,6 @@ class Pong():
         if pygame.sprite.collide_rect(self.ball, self.paddleA) and self.ball.velocity[0] < 0:
             self.paddleA.collided(self.ball)
 
-        # If limit reached then is_terminal_state...
-        lim = 10
-        if self.paddleA.score > lim:
-            self.paddleA.is_terminal_state = True
-
         # return observations... 1 for each paddle and ball(only y-axis)
         a_observation = np.array(
             (
@@ -191,10 +183,3 @@ class Pong():
         reward = self.paddleA.reward
         is_terminal_state = self.paddleA.is_terminal_state
         return (state, reward, is_terminal_state)
-
-    def get_screen(self):
-        # 2D (w,h) 32 bit color RGB 16777216
-        arr = pygame.surfarray.array2d(self.screen)
-        # ~ arr = pygame.surfarray.array3d(self.screen)	# 3D (w,h, 3) rgb
-        return arr
-        # ~ return np.dot(arr[...,:3], [0.299, 0.587, 0.114]) # RGB -> BW
