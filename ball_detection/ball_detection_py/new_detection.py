@@ -7,9 +7,11 @@ while True:
     rows, cols, _ = frame.shape
 
     hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    low_value = np.array([161, 155, 84])
-    high_value = np.array([179, 255, 255])
-    mask = cv2.inRange(hsv_frame, low_value, high_value)
+
+    ORANGE_MIN = np.array([10, 100, 80], np.uint8)
+    ORANGE_MAX = np.array([25, 255, 255], np.uint8)
+
+    mask = cv2.inRange(hsv_frame, ORANGE_MIN, ORANGE_MAX)
 
     countours, _ = cv2.findContours(
         mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -18,6 +20,7 @@ while True:
 
     x_medium = 0
     y_medium = 0
+
     for cnt in countours:
         (x, y, w, h) = cv2.boundingRect(cnt)
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
