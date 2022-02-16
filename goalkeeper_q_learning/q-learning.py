@@ -1,4 +1,3 @@
-
 from turtle import shape
 import numpy as np
 import pygame
@@ -37,7 +36,7 @@ if not PLAY:
     # use the best q-table, if available...
     try:
         q_table = np.load(
-            "goalkeeper_q_learning/qtables/qtable_0_e3900.npy")
+            "goalkeeper_q_learning/qtables/qtable_0_e4000.npy")
         # print(np.shape(q_table))
         print('using best ones..')
     except:
@@ -88,6 +87,7 @@ if not PLAY:
             discrete_state = new_discrete_state
         # Save the Q-table
         if not episode % STATS_EVERY:
+            print("hiii")
             np.save(
                 "goalkeeper_q_learning/qtables/qtable_0_e{}.npy".format(episode), q_table)
 
@@ -110,7 +110,7 @@ if not PLAY:
 # After Training, time to play...
 try:
     q_table_a = np.load(
-        "goalkeeper_q_learning/qtables/qtable_0_e3900.npy")
+        "goalkeeper_q_learning/qtables/qtable_0_e4000.npy")
 
     print('file found')
     found = True

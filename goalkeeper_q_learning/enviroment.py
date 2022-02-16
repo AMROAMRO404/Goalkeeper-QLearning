@@ -29,7 +29,7 @@ class Ball(pygame.sprite.Sprite):
 
         pygame.draw.circle(self.image, color, [self.r, self.r], self.r)
 
-        self.velocity = [randint(4, 8), randint(-8, 8)]
+        self.velocity = [randint(8, 12), randint(-12, 12)]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
@@ -43,7 +43,7 @@ class Ball(pygame.sprite.Sprite):
 
     def bounce(self):
         self.velocity[0] = -self.velocity[0]
-        self.velocity[1] = randint(-8, 8)
+        self.velocity[1] = randint(-12, 12)
 
 
 class Paddle(pygame.sprite.Sprite):
@@ -120,7 +120,8 @@ class Pong():
         # Return the initial positions
         a_observation = np.array(
             (
-                self.paddleA.rect.centery, self.ball.rect.centery
+                self.paddleA.rect.centery,
+                self.ball.rect.centery
             )
         )
 
@@ -152,7 +153,7 @@ class Pong():
                 sys.exit()
 
         # Moving the paddles according to action given... -1, 0 or 1
-        speed = 8
+        speed = 12
         self.paddleA.move((action-1) * speed)			# map from 0,1,2 to -1,0,1
 
         # Check if the ball is bouncing against any of the 4 walls:
