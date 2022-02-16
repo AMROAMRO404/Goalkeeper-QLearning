@@ -6,8 +6,8 @@ import numpy as np
 x_medium = 0
 y_medium = 0
 
-border_x = 20
-border_y = 20
+border_x = 40
+border_y = 40
 
 border_color = (255, 0, 0)
 ball_border_color = (0, 255, 0)
@@ -60,16 +60,30 @@ while True:
         x_medium = (x + w//2)
         y_medium = (y + h//2)
 
-        cv2.rectangle(frame, (x, y), (x + w, y + h),
-                      ball_border_color, thikness)
-        cv2.line(frame,  (x_medium, border_y),
-                 (x_medium, rows), ball_border_color, thikness)
-        cv2.line(frame, (border_x, y_medium),
-                 (cols, y_medium), ball_border_color, thikness)
+        if (x_medium >= border_x and x_medium <= cols) and (y_medium >= border_y and y_medium <= rows):
+            cv2.rectangle(frame, (x, y), (x + w, y + h),
+                          ball_border_color, thikness)
+            cv2.line(frame,  (x_medium, border_y),
+                     (x_medium, rows), ball_border_color, thikness)
+            cv2.line(frame, (border_x, y_medium),
+                     (cols, y_medium), ball_border_color, thikness)
 
         # the values that goes to RL model
         x_medium = x_medium - border_x
         y_medium = y_medium - border_y
+
+        if (x_medium < border_x):
+            x_medium = 0
+
+        if (y_medium < border_y):
+            y_medium = 0
+
+        if (x_medium > cols - border_x):
+            x_medium = cols - border_x
+
+        if (y_medium > rows - border_y):
+            y_medium = rows - border_y
+
         print("x_medium = ", x_medium, ", y_medium = ", y_medium)
 
         break
