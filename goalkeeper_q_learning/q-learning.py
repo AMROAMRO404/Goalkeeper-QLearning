@@ -1,3 +1,4 @@
+from pickle import TRUE
 from turtle import shape
 import numpy as np
 import pygame
@@ -14,7 +15,7 @@ LEARNING_RATE, DISCOUNT, EPISODES, SHOW_EVERY, STATS_EVERY, PLAY = q_learning_co
 PLAY = True
 
 # Exploration settings
-epsilon = 1  	# not a constant, going to be decayed
+epsilon = 0.1  	# not a constant, going to be decayed
 START_EPSILON_DECAYING = 1
 END_EPSILON_DECAYING = EPISODES//2
 epsilon_decay_value = epsilon/(END_EPSILON_DECAYING - START_EPSILON_DECAYING)
@@ -36,7 +37,7 @@ if not PLAY:
     # use the best q-table, if available...
     try:
         q_table = np.load(
-            "goalkeeper_q_learning/qtables/qtable_0_e4000.npy")
+            "C:/Users/Amro Amro/OneDrive/desktop/GOALKEEPER_AGAIN/Goalkeeper-QLearning/goalkeeper_q_learning/qtables/qtable_0_e2000.npy")
         # print(np.shape(q_table))
         print('using best ones..')
     except:
@@ -89,7 +90,7 @@ if not PLAY:
         if not episode % STATS_EVERY:
             print("hiii")
             np.save(
-                "goalkeeper_q_learning/qtables/qtable_0_e{}.npy".format(episode), q_table)
+                "C:/Users/Amro Amro/OneDrive/desktop/GOALKEEPER_AGAIN/Goalkeeper-QLearning/goalkeeper_q_learning/qtables/qtable_0_e{}.npy".format(episode), q_table)
 
         # Decaying is being done every episode if episode number is within decaying range
         if (END_EPSILON_DECAYING >= episode >= START_EPSILON_DECAYING):
@@ -110,12 +111,13 @@ if not PLAY:
 # After Training, time to play...
 try:
     q_table_a = np.load(
-        "goalkeeper_q_learning/qtables/qtable_0_e4000.npy")
+        "C:/Users/Amro Amro/OneDrive/desktop/GOALKEEPER_AGAIN/Goalkeeper-QLearning/goalkeeper_q_learning/qtables/qtable_0_e2000.npy"
+    )
 
     print('file found')
     found = True
 except:
-    print('file not found')
+    print('file not found hhh')
     found = False
 
 s = env.reset()
@@ -123,5 +125,6 @@ while found:
     state_a = get_discrete_state(s)
 
     action_a = np.argmax(q_table_a[state_a])
+    print(action_a)
     s, _, _ = env.step(action_a)
     env.render()
