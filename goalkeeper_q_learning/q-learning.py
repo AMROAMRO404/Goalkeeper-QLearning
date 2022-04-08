@@ -2,6 +2,8 @@ from turtle import shape
 import numpy as np
 import pygame
 import sys
+import cv2
+from cv2 import imshow
 from pygame.locals import *
 from enviroment import Pong, Paddle, Ball
 from helpers import plot_args, q_learning_constants
@@ -14,7 +16,7 @@ LEARNING_RATE, DISCOUNT, EPISODES, SHOW_EVERY, STATS_EVERY, PLAY = q_learning_co
 PLAY = True
 
 # Exploration settings
-epsilon = 1  	# not a constant, going to be decayed
+epsilon = 0.1 	# not a constant, going to be decayed
 START_EPSILON_DECAYING = 1
 END_EPSILON_DECAYING = EPISODES//2
 epsilon_decay_value = epsilon/(END_EPSILON_DECAYING - START_EPSILON_DECAYING)
@@ -73,8 +75,7 @@ if not PLAY:
                 current_q = q_table[discrete_state + (action,)]
 
                 # Equation for a new Q value for current state and action
-                new_q = (1 - LEARNING_RATE) * current_q + \
-                    LEARNING_RATE * (reward + DISCOUNT * max_future_q)
+                new_q = (1 - LEARNING_RATE) * current_q + LEARNING_RATE * (reward + DISCOUNT * max_future_q)
 
                 # Update Q table with new Q value
                 q_table[discrete_state + (action,)] = new_q
@@ -119,9 +120,27 @@ except:
     found = False
 
 s = env.reset()
-while found:
-    state_a = get_discrete_state(s)
-
-    action_a = np.argmax(q_table_a[state_a])
-    s, _, _ = env.step(action_a)
-    env.render()
+maxix = 0 
+minix=400
+maxiy = 0
+miniy=400
+print(s)
+#while found:
+if found:
+    x_medium = 0
+    y_medium = 0
+    border_x = 5
+    border_y = 20
+    while True:
+        maxix = max(s[0],maxix)#390
+        maxiy = max(s[1],maxiy)#440
+        minix = min(s[0],minix)#50
+        miniy = min(s[1],miniy)#-2
+        print(s)#first para for keeper location , second for ball x location 
+        state_a = get_discrete_state(s)
+        #print(state_a) state a is related to the discretized value of what i dont know 
+        action_a = np.argmax(q_table_a[state_a])
+        #print(action_a) 2 ==> Down , 1 ==> do nothing , 0 ==>UP
+        s, _, _ = env.step(action_a)
+        env.render()
+        #print(minix , miniy)
