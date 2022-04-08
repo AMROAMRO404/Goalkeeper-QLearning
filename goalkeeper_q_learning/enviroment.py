@@ -4,8 +4,8 @@ import sys
 from random import randint
 from pygame.locals import *
 
-WIDTH = 700
-HEIGHT = 500
+WIDTH = 600
+HEIGHT = 440
 
 
 BLACK = (0, 0, 0)

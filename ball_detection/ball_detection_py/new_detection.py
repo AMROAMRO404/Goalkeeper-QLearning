@@ -6,14 +6,13 @@ import numpy as np
 x_medium = 0
 y_medium = 0
 
-border_x = 40
-border_y = 40
+border_x = 5
+border_y = 20
 
 border_color = (255, 0, 0)
 ball_border_color = (0, 255, 0)
 
 thikness = 2
-
 cap = cv2.VideoCapture(0)
 while True:
     _, frame = cap.read()

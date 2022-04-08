@@ -14,8 +14,8 @@ def plot_args(aggr_ep_rewards):
 
 
 def q_learning_constants():
-    LEARNING_RATE = 0.0001
-    DISCOUNT = 0.1
+    LEARNING_RATE = 0.00001
+    DISCOUNT = 1
     EPISODES = 5001
     SHOW_EVERY = 500
     STATS_EVERY = 100
