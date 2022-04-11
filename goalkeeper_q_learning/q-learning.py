@@ -124,7 +124,8 @@ maxix = 0
 minix=400
 maxiy = 0
 miniy=400
-print(s)
+#print(s)
+cnt = 0
 #while found:
 if found:
     x_medium = 0
@@ -190,7 +191,7 @@ if found:
             if (y_medium > rows - border_y):
                 y_medium = rows - border_y
 
-            print("x_medium = ", x_medium, ", y_medium = ", y_medium)
+            #print("x_medium = ", x_medium, ", y_medium = ", y_medium)
 
             break
 
@@ -200,7 +201,7 @@ if found:
         maxiy = max(s[1],maxiy)#440
         minix = min(s[0],minix)#50
         miniy = min(s[1],miniy)#-2
-        print(s)#first para for keeper location , second for ball x location 
+        #print(s)#first para for keeper location , second for ball x location 
         s[1]=y_medium
         state_a = get_discrete_state(s)
         #print(state_a) state a is related to the discretized value of what i dont know 
@@ -208,4 +209,10 @@ if found:
         #print(action_a) 2 ==> Down , 1 ==> do nothing , 0 ==>UP
         s, _, _ = env.step(action_a)
         env.render()
+        if action_a == 2:
+            cnt=cnt-35
+        elif action_a== 0:
+            cnt=cnt+35
+        print(type(cnt))
+        print("cnt = " , (s[0]-220)/3.4)
         #print(minix , miniy)
