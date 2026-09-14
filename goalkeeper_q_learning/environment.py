@@ -4,18 +4,19 @@ import sys
 from random import randint
 from pygame.locals import *
 
+from helpers import DEFAULT_BALL_SPEED, DEFAULT_PADDLE_SPEED
+
 WIDTH = 600
 HEIGHT = 440
 
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-GREY = (150, 150, 150)
 
 
 class Ball(pygame.sprite.Sprite):
     # This class represents a ball. It derives from the "Sprite" class in Pygame.
-    def __init__(self, color, x, y):
+    def __init__(self, color, x, y, speed=DEFAULT_BALL_SPEED):
         # Call the parent class (Sprite) constructor
         super().__init__()
 
@@ -29,7 +30,9 @@ class Ball(pygame.sprite.Sprite):
 
         pygame.draw.circle(self.image, color, [self.r, self.r], self.r)
 
-        self.velocity = [randint(8, 12), randint(-12, 12)]
+        self.x_speed_range = (speed - 2, speed + 2)
+        self.y_speed_range = (-(speed + 2), speed + 2)
+        self.velocity = [randint(*self.x_speed_range), randint(*self.y_speed_range)]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
@@ -43,7 +46,7 @@ class Ball(pygame.sprite.Sprite):
 
     def bounce(self):
         self.velocity[0] = -self.velocity[0]
-        self.velocity[1] = randint(-12, 12)
+        self.velocity[1] = randint(*self.y_speed_range)
 
 
 class Paddle(pygame.sprite.Sprite):
@@ -52,12 +55,11 @@ class Paddle(pygame.sprite.Sprite):
 
         self.w = 10
         self.h = 100
-        # self.score = 0
         self.goals = 0
         self.reward = 0
+        self.previous_reward = 0
         self.hits = 0
         self.is_terminal_state = False
-        self.for_is_terminal_state = 0
         # Set the background color and set it to be transparent
         self.image = pygame.Surface([self.w, self.h])
         self.image.fill(0)					# 0 is Black
@@ -74,8 +76,8 @@ class Paddle(pygame.sprite.Sprite):
         other.bounce()
 
     def reset(self, x, y):
-        # self.score = 0
         self.reward = 0
+        self.previous_reward = 0
         self.hits = 0
         self.is_terminal_state = False
         self.goals = 0
@@ -93,19 +95,21 @@ class Pong():
     FPS = 30  # Frame per second
     action_space = 3			# 3 actions... up,down,none
 
-    def __init__(self, w=WIDTH, h=HEIGHT):
+    def __init__(self, w=WIDTH, h=HEIGHT, ball_speed=None, paddle_speed=None):
         self.w = w
         self.h = h
+        self.paddle_speed = DEFAULT_PADDLE_SPEED if paddle_speed is None else paddle_speed
         pygame.init()
         self.screen = pygame.display.set_mode((w, h))
         pygame.display.set_caption("AI PONG")
         self.clock = pygame.time.Clock()
 
-        xmargin = 20  # Margin from corner 20px
+        self.xmargin = 20  # Margin from corner 20px
 
         # Position of the paddle and ball
-        self.paddleA = Paddle(WHITE, xmargin, h//2)
-        self.ball = Ball(WHITE, w//2, h//2)
+        self.paddleA = Paddle(WHITE, self.xmargin, h//2)
+        self.ball = Ball(WHITE, w//2, h//2,
+                          speed=DEFAULT_BALL_SPEED if ball_speed is None else ball_speed)
 
         # list of all the sprites in the game.
         self.all_sprites = pygame.sprite.Group()
@@ -113,9 +117,8 @@ class Pong():
         self.all_sprites.add(self.ball)
 
     def reset(self):
-        xmargin = 20
-        self.paddleA.reset(xmargin, self.h//2)
-        self.ball.reset(self.w//2, self.h//2)
+        self.paddleA.reset(self.xmargin, self.h//2)
+        self.ball.reset(self.w//2, self.h)
 
         # Return the initial positions
         a_observation = np.array(
@@ -153,8 +156,7 @@ class Pong():
                 sys.exit()
 
         # Moving the paddles according to action given... -1, 0 or 1
-        speed = 12
-        self.paddleA.move((action-1) * speed)			# map from 0,1,2 to -1,0,1
+        self.paddleA.move((action-1) * self.paddle_speed)	# map from 0,1,2 to -1,0,1
 
         # Check if the ball is bouncing against any of the 4 walls:
         if self.ball.rect.x > self.w-self.ball.r*2:
@@ -181,6 +183,8 @@ class Pong():
         )
 
         state = a_observation
-        reward = self.paddleA.reward
+        # Reward for this transition only, not the episode's running total
+        reward = self.paddleA.reward - self.paddleA.previous_reward
+        self.paddleA.previous_reward = self.paddleA.reward
         is_terminal_state = self.paddleA.is_terminal_state
         return (state, reward, is_terminal_state)
