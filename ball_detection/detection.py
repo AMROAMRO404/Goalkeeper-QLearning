@@ -3,15 +3,10 @@ import numpy as np
 import imutils
 
 
-def nothing(x):
-    pass
-
-
 cap = cv2.VideoCapture(0)
 
 while True:
     _, frame = cap.read()
-    #frame = cv2.imread('ball.jpg')
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     l_b = np.array([26, 29, 128])
