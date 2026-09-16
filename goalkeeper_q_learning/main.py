@@ -1,6 +1,6 @@
 import argparse
 
-from helpers import DEFAULT_BALL_SPEED, DEFAULT_PADDLE_SPEED, DEFAULT_QTABLE
+from helpers import DEFAULT_BALL_SPEED, DEFAULT_BAUD, DEFAULT_PADDLE_SPEED, DEFAULT_QTABLE
 
 
 def add_speed_args(parser):
@@ -38,6 +38,15 @@ def main():
     play_parser.add_argument(
         "--qtable", default=DEFAULT_QTABLE,
         help=f"q-table filename under qtables/ (default: {DEFAULT_QTABLE})")
+    play_parser.add_argument(
+        "--port", default=None,
+        help="Arduino serial port, e.g. /dev/cu.usbmodem14101 or COM3 (default: auto-detect)")
+    play_parser.add_argument(
+        "--baud", type=int, default=DEFAULT_BAUD,
+        help=f"serial baud rate, must match the sketch (default: {DEFAULT_BAUD})")
+    play_parser.add_argument(
+        "--no-arduino", action="store_true",
+        help="run without sending commands to the Arduino")
     add_speed_args(play_parser)
 
     human_parser = subparsers.add_parser(
@@ -55,7 +64,8 @@ def main():
             ball_speed=args.ball_speed, paddle_speed=args.paddle_speed)
     elif args.mode == "play":
         from play import play
-        play(filename=args.qtable, ball_speed=args.ball_speed, paddle_speed=args.paddle_speed)
+        play(filename=args.qtable, ball_speed=args.ball_speed, paddle_speed=args.paddle_speed,
+             port=args.port, baud=args.baud, use_arduino=not args.no_arduino)
     elif args.mode == "human":
         from human_play import play_human
         play_human(ball_speed=args.ball_speed, paddle_speed=args.paddle_speed)

@@ -38,7 +38,7 @@ flowchart LR
         CAM["Camera"] --> TRACK["Ball tracker<br/>(HSV color detection)"] --> POLICY["Q-table policy lookup"]
     end
     QT2[("Trained Q-table")] --> POLICY
-    POLICY -- "up / down / stay" --> ARD["Arduino"]
+    POLICY -- "serial: L / R / S" --> ARD["Arduino"]
     ARD -- motor signal --> ROBOT["Goalkeeper robot"]
 ```
 
@@ -71,11 +71,22 @@ The simulated field and the physical workspace have different dimensions. Simula
 ```
 goalkeeper_q_learning/   simulation environment, training, and run modes
 ball_detection/          camera-based ball detection and tracking (HSV color)
+arduino/goalkeeper/      Arduino sketch that drives the motor from serial commands
 ```
 
-<!-- TODO: if you add the Arduino sketch and serial-communication code, list them here, e.g.
-arduino/                 Arduino sketch for motor control
--->
+## Computer–Arduino Communication
+
+In `play` mode, the computer sends each action to the Arduino over USB serial (9600 baud) as one byte (`goalkeeper_q_learning/arduino.py`):
+
+| Q-table action | Byte | Arduino behavior |
+|---|---|---|
+| 0 | `L` | motor moves left |
+| 1 | `S` | motor stops |
+| 2 | `R` | motor moves right |
+
+The computer sends a command when the action changes and repeats the current command every 0.2 s. If the Arduino receives nothing for 1 s, it stops the motor, so the robot halts if the computer crashes or the cable is unplugged. When `play` exits, it sends `S`.
+
+The sketch (`arduino/goalkeeper/goalkeeper.ino`) is written for an H-bridge driver such as the L298N: `IN1` on pin 7, `IN2` on pin 8 and `ENA` on PWM pin 9. Change the pin constants and `MOTOR_SPEED` to match your wiring. If the robot moves the wrong way, swap the motor wires or swap `IN1`/`IN2`.
 
 ## Getting Started
 
@@ -92,6 +103,15 @@ python3 main.py sim     # watch a trained agent play against the simulated ball
 python3 main.py play    # run the trained agent against a real, camera-tracked ball
 python3 main.py human   # play manually with the keyboard
 ```
+
+Before running `play`, upload `arduino/goalkeeper/goalkeeper.ino` to the Arduino with the Arduino IDE and connect it by USB. The serial port is detected automatically; to choose it yourself, use `--port`. To test without the robot, use `--no-arduino`:
+
+```bash
+python3 main.py play --port /dev/cu.usbmodem14101   # macOS/Linux; on Windows e.g. --port COM3
+python3 main.py play --no-arduino                   # camera + policy only
+```
+
+Close the Arduino IDE's Serial Monitor first, because only one program can use the port at a time.
 
 Run any mode with `--help` to see its options (training length, ball/paddle speed, which saved model to use).
 

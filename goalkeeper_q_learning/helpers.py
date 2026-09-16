@@ -7,6 +7,7 @@ QTABLES_DIR = Path(__file__).resolve().parent / "qtables"
 DEFAULT_QTABLE = "qtable_0_e4000.npy"
 DEFAULT_BALL_SPEED = 10
 DEFAULT_PADDLE_SPEED = 12
+DEFAULT_BAUD = 9600
 
 
 def plot_args(aggr_ep_rewards):
