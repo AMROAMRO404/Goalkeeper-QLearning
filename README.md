@@ -1,22 +1,24 @@
 # Goalkeeper-QLearning
 
-A reinforcement learning project that trains a goalkeeper agent with tabular Q-learning, with the goal of controlling a physical goalkeeper robot: a camera watches a real ball and the trained policy decides whether the robot should move left, move right, or stay in place.
+A reinforcement learning goalkeeper robot, built as an undergraduate graduation project in Computer Engineering at Palestine Polytechnic University. A tabular Q-learning agent is trained in simulation, then deployed on a physical robot: a camera tracks a real ball, the learned policy decides whether to move left, move right, or stay, and an Arduino drives the motor.
+
+<!-- TODO: add a demo GIF or video link of the physical robot here -->
+<!-- ![Demo](media/demo.gif) -->
 
 ## Overview
 
-The project has two phases. First, an agent is trained entirely in a simulated, single-paddle Pong environment, learning through trial and error to intercept a bouncing ball. Second, the trained policy is deployed against a real ball: a camera detects the ball's position, and the same decision-making process that was learned in simulation now controls the robot in real time.
+The project has two phases:
 
-## How It Works
+1. **Training in simulation.** The agent learns in a custom single-paddle Pong environment built with Pygame, intercepting a bouncing ball through trial and error.
+2. **Deployment on hardware.** The simulated ball is replaced by a real one. A camera detects the ball's position, the trained policy chooses an action, and the action is sent to an Arduino that moves the goalkeeper.
 
-During training, the agent only observes two numbers — its own position and the ball's position — and chooses one of three actions each step: move one way, move the other way, or stay still. It is rewarded for intercepting the ball and penalized for letting it past, and over many episodes it learns a policy (a lookup table of state → best action) that maximizes saves.
+## System Architecture
 
-At deployment, the simulated ball is replaced by a real one. A camera feed is processed with color-based ball tracking to find the ball's position, which is fed into the same trained policy used during training. The policy's decision then needs to drive a motor to physically move the robot.
-
-**Training-time architecture:**
+**Training:**
 
 ```mermaid
 flowchart LR
-    subgraph SIM["Simulation"]
+    subgraph SIM["Simulation (Pygame)"]
         ENV["Pong environment<br/>ball + paddle physics"]
     end
     AGENT["Q-learning agent"]
@@ -27,37 +29,53 @@ flowchart LR
     AGENT -- saves --> QT
 ```
 
-**Deployment architecture (physical robot):**
+**Deployment (physical robot):**
 
 ```mermaid
 flowchart LR
-    BALL((Real ball))
-    ROBOT["Goalkeeper robot<br/>(paddle / arm on a rail)"]
-
-    subgraph PI["Raspberry Pi (or similar)"]
-        CAM["Camera"]
-        TRACK["Ball tracker<br/>(color detection)"]
-        QT2[("Trained Q-table")]
-        POLICY["Policy lookup"]
-        DRIVER["Motor driver<br/>⚠ not yet implemented"]
-
-        CAM --> TRACK --> POLICY
-        QT2 --> POLICY
-        POLICY -- "move left / stay / move right" --> DRIVER
+    BALL((Real ball)) -. seen by .-> CAM
+    subgraph PC["Computer"]
+        CAM["Camera"] --> TRACK["Ball tracker<br/>(HSV color detection)"] --> POLICY["Q-table policy lookup"]
     end
-
-    BALL -. "seen by" .-> CAM
-    DRIVER -- motor signal --> ROBOT
+    QT2[("Trained Q-table")] --> POLICY
+    POLICY -- "up / down / stay" --> ARD["Arduino"]
+    ARD -- motor signal --> ROBOT["Goalkeeper robot"]
 ```
 
-The Pi only needs to run inference (load the trained Q-table and look up an action per frame) — training itself happens beforehand on a regular computer.
+### Design decision: Raspberry Pi → Computer + Arduino
+
+The original design ran the whole pipeline on a Raspberry Pi. In practice, the Pi was too slow for real-time control, so the system was split:
+
+- **Computer:** camera processing, ball tracking, and policy inference
+- **Arduino:** receives the chosen action and drives the motor
+
+This kept the time-critical perception and decision loop on hardware fast enough to react to the ball, while the Arduino handled low-level actuation.
+
+### Sim-to-real mapping
+
+The simulated field and the physical workspace have different dimensions. Simulation coordinates are scaled proportionally to the robot's physical range of motion, and the camera placement was calibrated so that detected ball positions map onto the same coordinate space the agent was trained in.
+
+## Agent Design
+
+| Component | Setting |
+|---|---|
+| Algorithm | Tabular Q-learning |
+| State | Goalkeeper position and ball position (vertical axis), discretized into a 30 × 30 grid |
+| Actions | Move up, move down, stay |
+| Reward | +10 for a save, −1 when the ball gets past |
+| Episode end | When a save is made |
+| Training | 5,000 episodes, learning rate 0.1, ε-greedy exploration with linear decay |
 
 ## Project Structure
 
 ```
-goalkeeper_q_learning/   simulation, training, and the four run modes (see below)
-ball_detection/          camera-based ball tracking (color detection)
+goalkeeper_q_learning/   simulation environment, training, and run modes
+ball_detection/          camera-based ball detection and tracking (HSV color)
 ```
+
+<!-- TODO: if you add the Arduino sketch and serial-communication code, list them here, e.g.
+arduino/                 Arduino sketch for motor control
+-->
 
 ## Getting Started
 
@@ -66,27 +84,29 @@ pip3 install -r requirements.txt
 cd goalkeeper_q_learning
 ```
 
-The project runs in four modes:
+Run modes:
 
 ```bash
 python3 main.py train   # train a new agent in simulation
 python3 main.py sim     # watch a trained agent play against the simulated ball
-python3 main.py play    # drive a trained agent using a real, camera-tracked ball
-python3 main.py human   # play manually with the keyboard, to try out the game itself
+python3 main.py play    # run the trained agent against a real, camera-tracked ball
+python3 main.py human   # play manually with the keyboard
 ```
 
-Run any mode with `--help` to see its options (e.g. training length, ball/paddle speed, which saved model to use).
+Run any mode with `--help` to see its options (training length, ball/paddle speed, which saved model to use).
 
-## Agent Design
+## Results
 
-The agent's state is its own position and the ball's position, discretized into a coarse grid so a simple table (rather than a neural network) can represent the policy. It has three actions (move one way, move the other way, stay), gets a positive reward for a successful save and a small penalty for a miss, and an episode ends the moment a save is made. This is a standard, minimal setup for demonstrating tabular Q-learning on a continuous-feeling control task.
+<!-- TODO: add a reward curve from training (plot_args output) and a save rate,
+e.g. "The trained agent saved X of 100 simulated shots." -->
 
-## Current Status & Remaining Work
+## Limitations and Future Directions
 
-Implemented: the training simulation, the trained agent, and camera-based ball detection. Not yet implemented: the final step of sending the agent's decision to an actual motor — today, that decision only drives an on-screen visualization. Completing the physical build requires adding motor control on the target hardware (e.g. a Raspberry Pi) and calibrating the mapping between camera coordinates and the robot's physical range of motion.
+- **Reactive, not anticipatory.** The agent observes only the ball's current vertical position, with no velocity or horizontal position, so it reacts rather than predicting where the ball will go.
+- **Coarse state representation.** A lookup table over a 30 × 30 grid limits precision and does not scale to richer observations. Function approximation (e.g., DQN) would remove this limit.
+- **Lighting-dependent perception.** Color-based detection depends on consistent lighting and a ball color that stands out from the background.
+- **Fixed sim-to-real mapping.** The proportional mapping works for one calibrated setup, but the policy has no robustness to conditions it did not see in training. Domain randomization is a natural next step.
 
-## Limitations
+## Team and Contributions
 
-- Ball detection relies on color, so it depends on consistent lighting and a ball color distinguishable from the background.
-- The agent reasons about a single axis of motion only, not the ball's full trajectory.
-- The policy is trained on a simplified, simulated ball physics model, so some retraining or tuning should be expected once real hardware is introduced.
+<!-- TODO: list team members and your own contributions -->
