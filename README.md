@@ -3,7 +3,7 @@
 A reinforcement learning goalkeeper robot, built as an undergraduate graduation project in Computer Engineering at Palestine Polytechnic University. A tabular Q-learning agent is trained in simulation, then deployed on a physical robot: a camera tracks a real ball, the learned policy decides whether to move left, move right, or stay, and an Arduino drives the motor.
 
 <!-- TODO: add a demo GIF or video link of the physical robot here -->
-<!-- ![Demo](media/demo.gif) -->
+[Demo and University report](https://drive.google.com/drive/folders/1--cK6fg1jB0BzdHOXvXStFVEXF7mKNGa)
 
 ## Overview
 
