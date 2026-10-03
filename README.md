@@ -129,4 +129,6 @@ e.g. "The trained agent saved X of 100 simulated shots." -->
 
 ## Team and Contributions
 
-<!-- TODO: list team members and your own contributions -->
+- @AMROAMRO404
+- @rubairshaid
+- @majdewawi
