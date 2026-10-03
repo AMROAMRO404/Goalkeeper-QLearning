@@ -115,11 +115,6 @@ Close the Arduino IDE's Serial Monitor first, because only one program can use t
 
 Run any mode with `--help` to see its options (training length, ball/paddle speed, which saved model to use).
 
-## Results
-
-<!-- TODO: add a reward curve from training (plot_args output) and a save rate,
-e.g. "The trained agent saved X of 100 simulated shots." -->
-
 ## Limitations and Future Directions
 
 - **Reactive, not anticipatory.** The agent observes only the ball's current vertical position, with no velocity or horizontal position, so it reacts rather than predicting where the ball will go.
